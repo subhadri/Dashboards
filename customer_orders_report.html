@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Customer Orders Analysis Dashboard - Updated</title>
+    <link href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap' rel='stylesheet'>
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
+    <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); padding: 2rem; }
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+        .header-container { text-align: center; margin-bottom: 3rem; }
+        .header-title { font-size: 3rem; font-weight: 800; background: linear-gradient(to right, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-subtitle { color: var(--text-muted); margin-top: 0.75rem; }
+        .author-line { color: #c7d2fe; margin-top: 0.5rem; font-size: 0.95rem; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; max-width: 1400px; margin: 0 auto; }
+        @media (min-width: 1024px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } .full-width { grid-column: span 2; } }
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 2rem; box-shadow: var(--glass-shadow); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
+        .card-title { font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem; }
+        .chart-container { position: relative; height: 320px; width: 100%; margin-top: 1rem; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .metric-item { background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .metric-value { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .metric-label { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        .ai-insight-btn { background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 30px; cursor: pointer; font-weight: 600; }
+        .ai-insight-panel { background: rgba(139, 92, 246, 0.1); border-left: 4px solid #8b5cf6; border-radius: 0 12px 12px 0; padding: 1.5rem; margin-top: 1rem; display: none; }
+        .ai-insight-panel.active { display: block; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+        .pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .pill-high { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .pill-mod { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .pill-low { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .pill-elec { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .pill-cloth { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
+        .pill-home { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+    </style>
+</head>
+<body>
+    <div class='header-container'>
+        <h1 class='header-title'>Customer Orders Analysis Dashboard</h1>
+        <p class='header-subtitle'>Updated report generated from current notebook data objects.</p>
+        <p class='author-line'>Author: Subhadri</p>
+    </div>
+    <div class='dashboard-grid'>
+        <div class='card full-width'>
+            <div class='card-header'>
+                <h2 class='card-title'><i class='fa-solid fa-bullseye'></i> 1. Problem Statement & Analysis Steps</h2>
+            </div>
+            <p>The report analyzes synthetic customer order data to identify spending segments, category performance, and purchase behavior using only notebook-generated order objects.</p>
+            <ul style='padding-left: 1.4rem; margin-top: 1rem;'>
+                <li>Generate synthetic order data and fixed product pricing.</li>
+                <li>Compute customer spend totals and classify customers by percentile tiers.</li>
+                <li>Aggregate sales by category and customer segment.</li>
+                <li>Extract purchase behavior insights from actual order lines.</li>
+                <li>Render charts and tables from notebook objects only.</li>
+            </ul>
+            <button class='ai-insight-btn' onclick="toggleInsight('insight1')"><i class='fa-solid fa-sparkles'></i> AI Insight</button>
+            <div class='ai-insight-panel' id='insight1'>
+                <p>The updated report is built only from current notebook variables and avoids outdated assumptions. It reflects the actual customer spend distribution and category contributions found in the latest dataset.</p>
+            </div>
+        </div>
+        <div class='card full-width'>
+            <div class='card-header'>
+                <h2 class='card-title'><i class='fa-solid fa-database'></i> 2. Raw Data Overview</h2>
+            </div>
+            <div class='metrics-grid'>
+                <div class='metric-item'><div class='metric-value'>320</div><div class='metric-label'>Total Orders</div></div>
+                <div class='metric-item'><div class='metric-value'>100</div><div class='metric-label'>Unique Customers</div></div>
+                <div class='metric-item'><div class='metric-value'>30</div><div class='metric-label'>Unique Products</div></div>
+                <div class='metric-item'><div class='metric-value'>$86,418</div><div class='metric-label'>Total Revenue</div></div>
+            </div>
+            <div class='table-container'>
+                <table>
+                    <thead><tr><th>Customer</th><th>Classification</th><th>Category</th><th>Product</th><th>Price</th></tr></thead>
+                    <tbody>
+                    <tr>
+                        <td>Gonzalez, Jason</td>
+                        <td><span class="pill pill-high">High-value buyer</span></td>
+                        <td><span class="pill pill-home">Home Essentials</span></td>
+                        <td>Cookware Set</td>
+                        <td>$140.00</td>
+                    </tr>
+                    <tr>
+                        <td>Gonzalez, Jason</td>
+                        <td><span class="pill pill-high">High-value buyer</span></td>
+                        <td><span class="pill pill-home">Home Essentials</span></td>
+                        <td>Wall Clock</td>
+                        <td>$30.00</td>
+                    </tr>
+                    <tr>
+                        <td>Pace, Kenneth</td>
+                        <td><span class="pill pill-mod">Moderate buyer</span></td>
+                        <td><span class="pill pill-cloth">Clothing</span></td>
+                        <td>Socks</td>
+                        <td>$12.00</td>
+                    </tr>
+                    <tr>
+                        <td>Pace, Kenneth</td>
+                        <td><span class="pill pill-mod">Moderate buyer</span></td>
+                        <td><span class="pill pill-home">Home Essentials</span></td>
+                        <td>Water Bottle</td>
+                        <td>$15.00</td>
+                    </tr>
+                    <tr>
+                        <td>Lindsey, Amy</td>
+                        <td><span class="pill pill-low">Low-value buyer</span></td>
+                        <td><span class="pill pill-cloth">Clothing</span></td>
+                        <td>Formal Shirt</td>
+                        <td>$45.00</td>
+                    </tr>
+                    <tr>
+                        <td>Lindsey, Amy</td>
+                        <td><span class="pill pill-low">Low-value buyer</span></td>
+                        <td><span class="pill pill-cloth">Clothing</span></td>
+                        <td>Cap</td>
+                        <td>$20.00</td>
+                    </tr></tbody>
+                </table>
+            </div>
+            <button class='ai-insight-btn' onclick="toggleInsight('insight2')"><i class='fa-solid fa-sparkles'></i> AI Insight</button>
+            <div class='ai-insight-panel' id='insight2'>
+                <p>The dataset shows how fixed product prices influence total spend. The sample rows demonstrate actual order lines from the current notebook state, highlighting category mix and variation in customer spend.</p>
+            </div>
+        </div>
+        <div class='card'>
+            <div class='card-header'>
+                <h2 class='card-title'><i class='fa-solid fa-users-viewfinder'></i> 3. Customer Classification</h2>
+            </div>
+            <div class='chart-container'>
+                <canvas id='bubbleChart'></canvas>
+            </div>
+            <button class='ai-insight-btn' onclick="toggleInsight('insight3')"><i class='fa-solid fa-sparkles'></i> AI Insight</button>
+            <div class='ai-insight-panel' id='insight3'>
+                <p>Classification reflects the latest spend tiers. High-value customers are the largest revenue drivers, while moderate and low-value segments contribute through higher order frequency or broader category reach.</p>
+            </div>
+        </div>
+        <div class='card'>
+            <div class='card-header'>
+                <h2 class='card-title'><i class='fa-solid fa-chart-simple'></i> 4. Category Sales</h2>
+            </div>
+            <div class='chart-container'>
+                <canvas id='barChart'></canvas>
+            </div>
+            <div class='table-container'>
+                <table>
+                    <thead><tr><th>Category</th><th>Total Spend</th><th>Orders</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class='pill pill-elec'>Electronics</span></td><td>$74,945</td><td>115</td></tr>
+                        <tr><td><span class='pill pill-cloth'>Clothing</span></td><td>$5,460</td><td>101</td></tr>
+                        <tr><td><span class='pill pill-home'>Home Essentials</span></td><td>$6,013</td><td>104</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class='ai-insight-btn' onclick="toggleInsight('insight4')"><i class='fa-solid fa-sparkles'></i> AI Insight</button>
+            <div class='ai-insight-panel' id='insight4'>
+                <p>Category spend and order counts are driven by actual current orders. This section is a direct reflection of category revenue distribution from the notebook data.</p>
+            </div>
+        </div>
+        <div class='card full-width'>
+            <div class='card-header'>
+                <h2 class='card-title'><i class='fa-solid fa-lightbulb'></i> 5. Purchase Behavior Insights</h2>
+            </div>
+            <div style='display: grid; gap: 1rem;'>
+                <div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem;'>
+                    <h3 style='margin-bottom: 0.4rem;'>Pattern 1: Revenue concentration in high-value buyers</h3>
+                    <p><strong>What we see:</strong> High-value buyers contribute <strong>68.8%</strong> of total revenue.</p>
+                    <p><strong>Retailer action:</strong> Run VIP retention programs (early access drops, premium bundles, loyalty tiers) to protect top-revenue customers.</p>
+                </div>
+                <div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem;'>
+                    <h3 style='margin-bottom: 0.4rem;'>Pattern 2: Cross-category shopping increases spend</h3>
+                    <p><strong>What we see:</strong> Customers active across categories are high spenders, with <strong>25</strong> customers buying in all categories.</p>
+                    <p><strong>Retailer action:</strong> Trigger cross-sell recommendations after first purchase and create category-combo offers to increase basket value.</p>
+                </div>
+                <div style='background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem;'>
+                    <h3 style='margin-bottom: 0.4rem;'>Pattern 3: Segment-category behavior is uneven</h3>
+                    <p><strong>What we see:</strong> Category spend distribution differs by customer segment, and Electronics contributes <strong>86.7%</strong> of revenue.</p>
+                    <p><strong>Retailer action:</strong> Personalize campaign mechanics by segment: onboarding offers for low-value buyers, basket-building incentives for moderate buyers, and premium upsells for high-value buyers.</p>
+                </div>
+            </div>
+            <button class='ai-insight-btn' onclick="toggleInsight('insight5')"><i class='fa-solid fa-sparkles'></i> AI Insight</button>
+            <div class='ai-insight-panel' id='insight5'>
+                <p>These patterns and actions are generated directly from current notebook data objects, helping convert spend behavior into targeted retail strategy.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleInsight(id) {
+            document.getElementById(id).classList.toggle('active');
+        }
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        const ctxBubble = document.getElementById('bubbleChart').getContext('2d');
+        new Chart(ctxBubble, {
+            type: 'bubble',
+            data: {
+                datasets: [
+                    { label: 'High-value buyers', data: [{ x: 125, y: 59485, r: 35.7 }], backgroundColor: 'rgba(16, 185, 129, 0.6)', borderColor: '#34d399', borderWidth: 2 },
+                    { label: 'Moderate buyers', data: [{ x: 99, y: 21355, r: 16.2 }], backgroundColor: 'rgba(245, 158, 11, 0.6)', borderColor: '#fbbf24', borderWidth: 2 },
+                    { label: 'Low-value buyers', data: [{ x: 96, y: 5578, r: 4.4 }], backgroundColor: 'rgba(239, 68, 68, 0.6)', borderColor: '#f87171', borderWidth: 2 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { title: { display: true, text: 'Total Orders', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { title: { display: true, text: 'Total Spend ($)', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: function(value) { return '$' + value.toLocaleString(); } } } },
+                plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc' } }, tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': Orders ' + context.raw.x + ', Spend $' + context.raw.y.toLocaleString(); } } } }
+            }
+        });
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: { labels: ['Electronics', 'Clothing', 'Home Essentials'], datasets: [{ label: 'Total Revenue', data: [74945, 5460, 6013], backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(236, 72, 153, 0.7)'], borderColor: ['#60a5fa', '#c084fc', '#f472b6'], borderWidth: 2, borderRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: function(value) { return '$' + (value / 1000) + 'k'; } } }, x: { grid: { display: false } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return 'Revenue: $' + context.raw.toLocaleString(); } } } } }
+        });
+    </script>
+</body>
+</html>
