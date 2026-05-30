@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legend of the Ancient Treasure</title>
+  <style>
+    :root {
+      --bg: #09111f;
+      --panel: rgba(10, 18, 35, 0.9);
+      --accent: #f4c95d;
+      --accent-2: #7ef9ff;
+      --danger: #ff6b6b;
+      --ok: #56f39a;
+      --text: #edf2ff;
+      --muted: #b9c2dd;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 20% 20%, #16325f 0%, var(--bg) 45%, #05070d 100%);
+      overflow: hidden;
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+        radial-gradient(2px 2px at 90px 120px, #dbe7ff, transparent),
+        radial-gradient(1px 1px at 160px 70px, #fff, transparent),
+        radial-gradient(2px 2px at 220px 180px, #fff, transparent);
+      background-size: 260px 220px;
+      opacity: 0.35;
+      animation: drift 35s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes drift {
+      from { transform: translateY(0); }
+      to { transform: translateY(-220px); }
+    }
+
+    .game-shell {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }
+
+    .panel {
+      width: min(1100px, 97vw);
+      min-height: min(90vh, 840px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 20px;
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
+      padding: clamp(1.2rem, 2vw, 2rem);
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 1rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .scene {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 1rem;
+      background: rgba(3, 6, 16, 0.55);
+      overflow: auto;
+    }
+
+    .status {
+      color: var(--accent-2);
+      margin: 0.2rem 0 0;
+      font-size: 0.95rem;
+    }
+
+    .scene-art {
+      width: 100%;
+      min-height: 300px;
+      max-height: 390px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 14px;
+      margin-bottom: 0.9rem;
+      overflow: hidden;
+      position: relative;
+      background-size: cover;
+      background-position: center;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .scene-art::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(7,11,22,0.15) 0%, rgba(6,9,18,0.55) 70%, rgba(3,5,12,0.72) 100%);
+    }
+
+    .scene-label {
+      position: absolute;
+      left: 1rem;
+      bottom: 0.8rem;
+      z-index: 2;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #f4f7ff;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.8);
+      font-size: 1.05rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 1rem;
+    }
+
+    input[type="text"] {
+      flex: 1 1 240px;
+      padding: 0.7rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 0.72rem 1rem;
+      background: linear-gradient(120deg, #2a63ff, #4c8dff);
+      color: white;
+      cursor: pointer;
+      font-size: 0.96rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      transition: transform 0.15s ease, filter 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    button.secondary { background: linear-gradient(120deg, #42506d, #5f6f91); }
+    button.danger { background: linear-gradient(120deg, #d64a4a, #ff7070); }
+
+    .option-card {
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      padding: 0.9rem;
+      margin: 0.7rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .inventory {
+      margin-top: 0.8rem;
+      color: var(--ok);
+      font-weight: 700;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      z-index: 20;
+      background: rgba(4, 8, 20, 0.8);
+    }
+
+    .overlay.show { display: grid; }
+
+    .modal {
+      width: min(680px, 92vw);
+      border-radius: 18px;
+      background: #0f1b37;
+      border: 1px solid rgba(255,255,255,0.22);
+      padding: 1.4rem;
+      text-align: center;
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .chest {
+      width: 160px;
+      height: 110px;
+      margin: 0 auto 0.9rem;
+      background: linear-gradient(180deg, #a36b2b, #744311);
+      border-radius: 10px;
+      position: relative;
+      animation: bounce 0.9s ease-in-out infinite alternate;
+      box-shadow: 0 0 0 4px #e0a443 inset;
+    }
+
+    .chest::before {
+      content: "";
+      position: absolute;
+      top: -24px;
+      left: 0;
+      right: 0;
+      margin: auto;
+      width: 170px;
+      height: 32px;
+      background: linear-gradient(180deg, #be8037, #8a561d);
+      border-radius: 12px 12px 4px 4px;
+      transform-origin: bottom;
+      animation: lid 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes lid {
+      from { transform: rotateX(0deg); }
+      to { transform: rotateX(65deg); }
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
+    }
+
+    .game-over {
+      color: var(--danger);
+      font-size: clamp(1.6rem, 5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      animation: pulse 0.9s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.72; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+  <div class="game-shell">
+    <div class="panel">
+      <div>
+        <h1>Legend of the Ancient Treasure</h1>
+        <p class="sub">Choose wisely. Survive the wilds. Claim the treasure.</p>
+      </div>
+      <p id="status" class="status">Enter your adventurer name to begin.</p>
+      <div id="scene" class="scene"></div>
+      <div id="globalControls" class="controls"></div>
+    </div>
+  </div>
+
+  <div id="winOverlay" class="overlay">
+    <div class="modal">
+      <div class="chest"></div>
+      <h2>You found the treasure!</h2>
+      <p>Your strategy and courage led you to victory.</p>
+      <button onclick="restartGame()">Play Again</button>
+    </div>
+  </div>
+
+  <div id="loseOverlay" class="overlay">
+    <div class="modal">
+      <div class="game-over">GAME OVER</div>
+      <p>You took a dangerous turn and lost the trail.</p>
+      <button class="danger" onclick="restartGame()">Retry</button>
+    </div>
+  </div>
+
+  <script>
+    const state = { name: "", inventory: [] };
+
+    const scene = document.getElementById("scene");
+    const status = document.getElementById("status");
+    const controls = document.getElementById("globalControls");
+    const winOverlay = document.getElementById("winOverlay");
+    const loseOverlay = document.getElementById("loseOverlay");
+
+    function sceneTile(url, label) {
+      return `
+        <div class="scene-art" style="background-image:url('${url}')">
+          <div class="scene-label">${label}</div>
+        </div>
+      `;
+    }
+
+    const sceneImages = {
+      intro: "assets/intro.jpg",
+      crossroads: "assets/crossroads.jpg",
+      forestChoice: "assets/forest_choice.jpg",
+      forestRiver: "assets/forest_river.jpg",
+      forestTree: "assets/forest_tree.jpg",
+      caveChoice: "assets/cave_choice.jpg",
+      caveTorch: "assets/cave_torch.jpg",
+      caveDark: "assets/cave_dark.jpg",
+      lockedGate: "assets/locked_gate.jpg",
+      treasureWin: "assets/treasure_win.jpg"
+    };
+
+    function setStatus(msg) { status.textContent = msg; }
+    function addItem(item) { if (!state.inventory.includes(item)) state.inventory.push(item); }
+
+    function renderInventory() {
+      if (!state.inventory.length) return "";
+      return `<div class="inventory">Inventory: ${state.inventory.join(", ")}</div>`;
+    }
+
+    function clearOverlays() {
+      winOverlay.classList.remove("show");
+      loseOverlay.classList.remove("show");
+    }
+
+    function restartGame() {
+      clearOverlays();
+      state.name = "";
+      state.inventory = [];
+      renderIntro();
+    }
+
+    function renderIntro() {
+      setStatus("Welcome, explorer. Enter your name and start your quest.");
+      scene.innerHTML = `
+        ${sceneTile(sceneImages.intro, "The Ancient Land Calls You")}
+        <p>The ancient land awaits a brave adventurer willing to face the forest and cave.</p>
+        <div class="controls">
+          <input id="nameInput" type="text" placeholder="Your name" maxlength="24" />
+          <button onclick="beginQuest()">Begin Quest</button>
+        </div>
+      `;
+      controls.innerHTML = "";
+    }
+
+    function beginQuest() {
+      const nameInput = document.getElementById("nameInput");
+      const name = (nameInput?.value || "").trim();
+      if (!name) {
+        setStatus("Please enter a valid name to continue.");
+        return;
+      }
+      state.name = name;
+      renderPathChoice();
+    }
+
+    function renderPathChoice() {
+      setStatus(`Adventurer ${state.name}, choose your first destination.`);
+      scene.innerHTML = `
+        ${sceneTile(sceneImages.crossroads, "Crossroads of Destiny")}
+        <p>A fork appears before you: one road enters a dark forest, the other descends into a cave.</p>
+        ${renderInventory()}
+        <div class="option-card">
+          <div><strong>Dark Forest</strong><br />Follow moving shadows and river sounds.</div>
+          <button onclick="goForest()">Enter Forest</button>
+        </div>
+        <div class="option-card">
+          <div><strong>Mysterious Cave</strong><br />Explore carved tunnels and hidden chambers.</div>
+          <button onclick="goCave()">Enter Cave</button>
+        </div>
+      `;
+      controls.innerHTML = `<button class="secondary" onclick="restartGame()">Restart</button>`;
+    }
+
+    function goForest() {
+      setStatus("Forest path: choose your strategy.");
+      scene.innerHTML = `
+        ${sceneTile(sceneImages.forestChoice, "Whispering Forest Trail")}
+        <p>Tall trees close around you. Follow the river or climb a lookout tree.</p>
+        ${renderInventory()}
+        <div class="option-card">
+          <div><strong>Follow the River</strong><br />Safer route, slower progress.</div>
+          <button onclick="forestRiver()">Choose</button>
+        </div>
+        <div class="option-card">
+          <div><strong>Climb the Tree</strong><br />Risky climb with better visibility.</div>
+          <button onclick="forestTree()">Choose</button>
+        </div>
+      `;
+    }
+
+    function forestRiver() {
+      addItem("ancient map");
+      setStatus("You found a map fragment. It points toward a cave chamber.");
+      scene.innerHTML = `
+        ${sceneTile(sceneImages.forestRiver, "Riverbank Discovery")}
+        <p>You recover an <strong>ancient map</strong> from a mossy marker near the river.</p>
+        ${renderInventory()}
+        <p>The map hints at a sealed gate in the cave.</p>
+      `;
+      controls.innerHTML = `
+        <button onclick="goCave()">Head To Cave</button>
+        <button class="secondary" onclick="renderPathChoice()">Back to Crossroads</button>
+      `;
+    }
+
+    function forestTree() {
+      addItem("rusty key");
+      setStatus("From above, you spot a cave entrance and retrieve a rusty key.");
+      scene.innerHTML = `
+        ${sceneTile(sceneImages.forestTree, "Tree Top Find")}
+        <p>At the tree top, a hidden nest holds a <strong>rusty key</strong>.</p>
+        ${renderInventory()}
+        <p>This key may unlock something deep underground.</p>
+      `;
+      controls.innerHTML = `
+        <button onclick="goCave()">Head To Cave</button>
+        <button class="secondary" onclick="renderPathChoice()">Back to Crossroads</button>
+      `;
+    }
+
+    function goCave() {
+      setStatus("Cave path: choose how you proceed.");
+      scene.innerHTML = `
+        ${sceneTile(sceneImages.caveChoice, "Mysterious Cave Entrance")}
+        <p>The cave is cold and dark. Light a torch or walk in darkness.</p>
+        ${renderInventory()}
+        <div class="option-card">
+          <div><strong>Light a Torch</strong><br />Reveal carvings and avoid unstable rocks.</div>
+          <button onclick="caveTorch()">Choose</button>
+        </div>
+        <div class="option-card">
+          <div><strong>Walk in the Dark</strong><br />Faster, but dangerous and disorienting.</div>
+          <button class="danger" onclick="caveDark()">Choose</button>
+        </div>
+      `;
+      controls.innerHTML = `<button class="secondary" onclick="renderPathChoice()">Back to Crossroads</button>`;
+    }
+
+    function caveDark() {
+      setStatus("You lose footing and the cave collapses behind you.");
+      scene.innerHTML = `
+        ${sceneTile(sceneImages.caveDark, "Lost in Darkness")}
+        <p>The path vanishes into darkness.</p>
+      `;
+      loseOverlay.classList.add("show");
+    }
+
+    function caveTorch() {
+      addItem("lit torch");
+      const hasKey = state.inventory.includes("rusty key");
+
+      if (hasKey) {
+        setStatus("Your key fits the sealed gate. Treasure found!");
+        scene.innerHTML = `
+          ${sceneTile(sceneImages.treasureWin, "Treasure Chamber")}
+          <p>The torch reveals an iron gate. Your <strong>rusty key</strong> unlocks it.</p>
+          ${renderInventory()}
+          <p>You discover a golden chest filled with ancient treasure.</p>
+        `;
+        winOverlay.classList.add("show");
+      } else {
+        setStatus("You find the treasure gate, but it is locked. Search for a key.");
+        scene.innerHTML = `
+          ${sceneTile(sceneImages.caveTorch, "Torchlit Sealed Gate")}
+          <p>You safely reach a sealed gate, but you still need the key.</p>
+          ${renderInventory()}
+          <p>Hint: explore the forest to find what unlocks the final chamber.</p>
+        `;
+        controls.innerHTML = `
+          <button onclick="goForest()">Go To Forest</button>
+          <button class="secondary" onclick="renderPathChoice()">Back to Crossroads</button>
+        `;
+      }
+    }
+
+    renderIntro();
+  </script>
+</body>
+</html>
